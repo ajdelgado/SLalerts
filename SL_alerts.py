@@ -79,6 +79,7 @@ def test_lines(lines):
     return True
 
 
+usage = 'usage: %prog -h'
 parser = OptionParser(usage, version='%prog 1.0')
 parser.add_option('--debug', '-d', '--verbose', '-v',
                   help='Debug mode with extra verbosity',
