@@ -1,11 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import SLAPI
 import pprint
 import sys
 from smtplib import SMTP
-from email.MIMEText import MIMEText
-from email.Header import Header
-from email.Utils import parseaddr, formataddr
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 DeviationData={ 'transportationMode': 'bus,metro', 'lineNumber': '816,181,17,18,19'}
 #http://api.sl.se/api2/deviations.json?key=<DIN API KEY> & transportation mode = <TRANSPORT MODE> and line number = <LINE NUMBER> & SiteID = <SiteID> & from date = <FROM DATE> & todate = <todate>
 recipients=["recipient@mail.com"]
@@ -68,14 +67,14 @@ def SendAlert(alert):
     return True
 api=SLAPI.SLAPI()
 result=api.GetDeviations(DeviationData=DeviationData)
-print "Result:"
+print("Result:")
 pprint.pprint(result)
 if result is not None and result['StatusCode'] == 0 and len(result['ResponseData']) == 0:
-    print "There are no alerts."
+    print("There are no alerts.")
 elif result == None:
-    print "There are no alerts or the result was None."
+    print("There are no alerts or the result was None.")
 else:
-    print "There are %s alerts:" % len(result['ResponseData'])
+    print("There are %s alerts:" % len(result['ResponseData']))
     for alert in result['ResponseData']:
-        print " - %s: %s\n\t%s" % (alert['Scope'],alert['Header'],alert['Details'])
+        print(" - %s: %s\n\t%s" % (alert['Scope'],alert['Header'],alert['Details']))
         SendAlert(alert)

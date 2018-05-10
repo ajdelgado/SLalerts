@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import logging
 import requests
 import requests_cache
@@ -23,13 +23,6 @@ class SLAPI:
         self.SessionKey = ""
         self.ValidTo = ""
         self.ErrorMessage = ""
-        self.normalizeMap = {
-            'CardID': unicode('CardId'),
-            'CardPrimarySerialNumber': unicode('PrimarySerialNumber'),
-            'CardFirstName': unicode('FirstName'),
-            'CurrentStatus': unicode('CardStatus'),
-            'CardStatus': unicode('CurrentStatus'),
-        }
 
         self.s = requests.Session()
 
@@ -72,7 +65,7 @@ class SLAPI:
                #else:
                    #return res.json()
        except requests.exceptions.RequestException as e:
-           print e
+           print(e)
            sys.exit(1)
 
     def _get_nocache(self, resource, payload={}):
@@ -89,15 +82,15 @@ class SLAPI:
             if data["StatusCode"]==0:
                 return data
             else:
-                print "Get Error: {}".format(data.get("ErrorMessage"))
+                print("Get Error: {}".format(data.get("ErrorMessage")))
                 self.ErrorMessage = data.get("ErrorMessage")
                 #pprint.pprint(data)
                 #pprint.pprint(vars(data))
                 return None
         elif "Message" in data:
-                print "Got Error: {}".format(data.get("Message"))
+                print("Got Error: {}".format(data.get("Message")))
         else:
-            print "Error: No Response From API"
+            print("Error: No Response From API")
             self.ErrorMessage = data.get("ErrorMessage")
             #pprint.pprint(data)
             return None
@@ -110,10 +103,10 @@ class SLAPI:
                 self.SessionKey = data.get("SessionKey")
                 self.ValidTo = data.get("ValidTo")
             else:
-                print "Login Error: %s" % data.get("Error Message")
+                print("Login Error: %s" % data.get("Error Message"))
                 return None
         else:
-            print "Error: No Response From API"
+            print("Error: No Response From API")
             return None
 
         return True
