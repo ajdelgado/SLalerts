@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import SLAPI
 import pprint
+import sys
 from smtplib import SMTP
 from email.MIMEText import MIMEText
 from email.Header import Header
@@ -72,8 +73,7 @@ pprint.pprint(result)
 if result is not None and result['StatusCode'] == 0 and len(result['ResponseData']) == 0:
     print "There are no alerts."
 elif result == None:
-    print "There was an error and the result from getting deviations was None."
-    sys.exit(1)
+    print "There are no alerts or the result was None."
 else:
     print "There are %s alerts:" % len(result['ResponseData'])
     for alert in result['ResponseData']:
