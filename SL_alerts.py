@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 import SLAPI
 import pprint
-import sys
 from smtplib import SMTP
-from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-DeviationData={ 'transportationMode': 'bus,metro', 'lineNumber': '816,181,17,18,19'}
-#http://api.sl.se/api2/deviations.json?key=<DIN API KEY> & transportation mode = <TRANSPORT MODE> and line number = <LINE NUMBER> & SiteID = <SiteID> & from date = <FROM DATE> & todate = <todate>
-recipients=["recipient@mail.com"]
-sender="sender@mail.com"
+DeviationData = {'transportationMode': 'bus,metro',
+                 'lineNumber': '816,181,17,18,19'}
+# http://api.sl.se/api2/deviations.json?key=<DIN API KEY> &
+# transportation mode = <TRANSPORT MODE> and
+# line number = <LINE NUMBER> & SiteID = <SiteID> &
+# from date = <FROM DATE> & todate = <todate>
+recipients = ["recipient@mail.com"]
+sender = "sender@mail.com"
+
+
 def SendEmail(sender, recipient, subject, body):
     """Send an email.
 
@@ -60,21 +64,32 @@ def SendEmail(sender, recipient, subject, body):
     smtp = SMTP("localhost")
     smtp.sendmail(sender, recipient, msg.as_string())
     smtp.quit()
+
+
 def SendAlert(alert):
     subject = u"Alert in %s\r\n" % alert['Scope']
-    body = u"%s: %s\r\n\t%s\r\n\r\n" % (alert['Scope'],alert['Header'],alert['Details'])
+    body = u"%s: %s\r\n\t%s\r\n\r\n" % (alert['Scope'],
+                                        alert['Header'],
+                                        alert['Details'])
     SendEmail(sender, recipients, subject, body)
     return True
-api=SLAPI.SLAPI()
-result=api.GetDeviations(DeviationData=DeviationData)
+
+
+f = open('SL_API_key', 'r')
+apikey = f.read()
+f.close()
+api = SLAPI.SLAPI(apiKey=apikey)
+result = api.GetDeviations(DeviationData=DeviationData)
 print("Result:")
 pprint.pprint(result)
 if result is not None and result['StatusCode'] == 0 and len(result['ResponseData']) == 0:
     print("There are no alerts.")
-elif result == None:
+elif result is None:
     print("There are no alerts or the result was None.")
 else:
     print("There are %s alerts:" % len(result['ResponseData']))
     for alert in result['ResponseData']:
-        print(" - %s: %s\n\t%s" % (alert['Scope'],alert['Header'],alert['Details']))
+        print(" - %s: %s\n\t%s" % (alert['Scope'],
+                                   alert['Header'],
+                                   alert['Details']))
         SendAlert(alert)
