@@ -69,8 +69,11 @@ api=SLAPI.SLAPI()
 result=api.GetDeviations(DeviationData=DeviationData)
 print "Result:"
 pprint.pprint(result)
-if result['StatusCode'] == 0 and len(result['ResponseData']) == 0:
+if result is not None and result['StatusCode'] == 0 and len(result['ResponseData']) == 0:
     print "There are no alerts."
+elif result == None:
+    print "There was an error and the result from getting deviations was None."
+    sys.exit(1)
 else:
     print "There are %s alerts:" % len(result['ResponseData'])
     for alert in result['ResponseData']:
