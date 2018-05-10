@@ -3,17 +3,10 @@ import SLAPI
 import pprint
 from smtplib import SMTP
 from email.mime.text import MIMEText
-DeviationData = {'transportationMode': 'bus,metro',
-                 'lineNumber': '816,181,17,18,19'}
-# http://api.sl.se/api2/deviations.json?key=<DIN API KEY> &
-# transportation mode = <TRANSPORT MODE> and
-# line number = <LINE NUMBER> & SiteID = <SiteID> &
-# from date = <FROM DATE> & todate = <todate>
-recipients = ["recipient@mail.com"]
-sender = "sender@mail.com"
+import sys
 
 
-def SendEmail(sender, recipient, subject, body):
+def SendEmail(sender, recipient, subject, body, mailserver='localhost'):
     """Send an email.
 
     All arguments should be Unicode strings (plain ASCII works as well).
@@ -61,21 +54,73 @@ def SendEmail(sender, recipient, subject, body):
     msg['Subject'] = Header(unicode(subject), header_charset)
 
     # Send the message via SMTP to localhost:25
-    smtp = SMTP("localhost")
+    smtp = SMTP(mailserver)
     smtp.sendmail(sender, recipient, msg.as_string())
     smtp.quit()
 
 
 def SendAlert(alert):
+    global mailserver
+    global sender
+    global recipients
     subject = u"Alert in %s\r\n" % alert['Scope']
     body = u"%s: %s\r\n\t%s\r\n\r\n" % (alert['Scope'],
                                         alert['Header'],
                                         alert['Details'])
-    SendEmail(sender, recipients, subject, body)
+    SendEmail(sender, recipients, subject, body, mailserver)
     return True
 
 
-f = open('SL_API_key', 'r')
+def test_lines(lines):
+    list_lines = lines.split(',')
+    if len(list_lines) < 1 or len(list_lines) > 10:
+        return False
+    return True
+
+
+parser = OptionParser(usage, version='%prog 1.0')
+parser.add_option('--debug', '-d', '--verbose', '-v',
+                  help='Debug mode with extra verbosity',
+                  action='store_true', default=False)
+parser.add_option('--lines', '-l',
+                  help='SL lines to check',
+                  action='store_true', default='')
+parser.add_option('--transportationmode', '-m',
+                  help='Transportation modes to check. Allowed values ​​are ' +
+                       'bus, metro, train, ship and tram',
+                  action='store_true', default='')
+parser.add_option('--recipients', '-r',
+                  help='List of email recipients to receive alerts.',
+                  action='store_true', default='')
+parser.add_option('--sender', '-s',
+                  help='Email of the sender',
+                  action='store_true', default='')
+parser.add_option('--mailserver', '-h',
+                  help='Mail server to use',
+                  action='store_true', default='')
+parser.add_option('--apikeyfile', '-a',
+                  help='File containing www.trafiklab.se API key.',
+                  action='store_true', default='SL_API_key')
+(options, args) = parser.parse_args()
+debug = options.debug
+lines = options.lines
+recipients = options.recipients
+sender = options.sender
+mailserver = options.mailserver
+transportationmode = options.transportationmode
+apikeyfile = options.apikeyfile
+
+if not test_lines(lines):
+    print('Lines must be less than 10 separated by commas.')
+    sys.exit(65)
+DeviationData = {'transportationMode': transportationmode,
+                 'lineNumber': lines}
+# http://api.sl.se/api2/deviations.json?key=<DIN API KEY> &
+# transportation mode = <TRANSPORT MODE> and
+# line number = <LINE NUMBER> & SiteID = <SiteID> &
+# from date = <FROM DATE> & todate = <todate>
+
+f = open(apikeyfile, 'r')
 apikey = f.read()
 f.close()
 api = SLAPI.SLAPI(apiKey=apikey)
