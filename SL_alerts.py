@@ -4,6 +4,7 @@ import pprint
 from smtplib import SMTP
 from email.mime.text import MIMEText
 import sys
+from optparse import OptionParser
 
 
 def SendEmail(sender, recipient, subject, body, mailserver='localhost'):
