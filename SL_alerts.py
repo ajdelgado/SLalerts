@@ -3,6 +3,8 @@ import SLAPI
 import pprint
 from smtplib import SMTP
 from email.mime.text import MIMEText
+from email.utils import parseaddr, formataddr
+from email.header import Header
 import sys
 from optparse import OptionParser
 
@@ -41,21 +43,27 @@ def SendEmail(sender, recipient, subject, body, mailserver='localhost'):
 
     # We must always pass Unicode strings to Header, otherwise it will
     # use RFC 2047 encoding even on plain ASCII strings.
-    sender_name = str(Header(unicode(sender_name), header_charset))
-    recipient_name = str(Header(unicode(recipient_name), header_charset))
+    sender_name = str(Header(sender_name, header_charset))
+    recipient_name = str(Header(recipient_name, header_charset))
 
     # Make sure email addresses do not contain non-ASCII characters
-    sender_addr = sender_addr.encode('ascii')
-    recipient_addr = recipient_addr.encode('ascii')
+    sender_addr = sender_addr.encode('ascii').decode("utf-8")
+    recipient_addr = recipient_addr.encode('ascii').decode("utf-8")
 
     # Create the message ('plain' stands for Content-Type: text/plain)
     msg = MIMEText(body.encode(body_charset), 'plain', body_charset)
+
     msg['From'] = formataddr((sender_name, sender_addr))
     msg['To'] = formataddr((recipient_name, recipient_addr))
-    msg['Subject'] = Header(unicode(subject), header_charset)
+    msg['Subject'] = Header(subject, header_charset)
 
     # Send the message via SMTP to localhost:25
-    smtp = SMTP(mailserver)
+    try:
+        smtp = SMTP(mailserver)
+    except ConnectionRefusedError as e:
+        print("Error connecting to SMTP server '%s'. %s" % (mailserver, e))
+        sys.exit(1)
+    # smtp.connect(mailserver)
     smtp.sendmail(sender, recipient, msg.as_string())
     smtp.quit()
 
@@ -99,7 +107,7 @@ parser.add_option('--sender', '-s',
                   action='store', default='')
 parser.add_option('--mailserver', '-i',
                   help='Mail server to use',
-                  action='store', default='')
+                  action='store', default='localhost')
 parser.add_option('--apikeyfile', '-a',
                   help='File containing www.trafiklab.se API key.',
                   action='store', default='SL_API_key')
@@ -115,8 +123,8 @@ apikeyfile = options.apikeyfile
 if not test_lines(lines):
     print('Lines must be less than 10 separated by commas.')
     sys.exit(65)
-DeviationData = {'transportationMode': transportationmode,
-                 'lineNumber': lines}
+DeviationData = {'TransportMode': transportationmode,
+                 'LineNumber': lines}
 # http://api.sl.se/api2/deviations.json?key=<DIN API KEY> &
 # transportation mode = <TRANSPORT MODE> and
 # line number = <LINE NUMBER> & SiteID = <SiteID> &
@@ -124,8 +132,9 @@ DeviationData = {'transportationMode': transportationmode,
 
 f = open(apikeyfile, 'r')
 apikey = f.read()
+apikey = apikey.replace('\n','')
 f.close()
-api = SLAPI.SLAPI(apiKey=apikey)
+api = SLAPI.SLAPI(apiKey=apikey, debug=debug)
 result = api.GetDeviations(DeviationData=DeviationData)
 print("Result:")
 pprint.pprint(result)
