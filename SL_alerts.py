@@ -86,23 +86,23 @@ parser.add_option('--debug', '-d', '--verbose', '-v',
                   action='store_true', default=False)
 parser.add_option('--lines', '-l',
                   help='SL lines to check',
-                  action='store_true', default='')
+                  action='store', default='')
 parser.add_option('--transportationmode', '-m',
                   help='Transportation modes to check. Allowed values ​​are ' +
                        'bus, metro, train, ship and tram',
-                  action='store_true', default='')
+                  action='store', default='')
 parser.add_option('--recipients', '-r',
                   help='List of email recipients to receive alerts.',
-                  action='store_true', default='')
+                  action='store', default='')
 parser.add_option('--sender', '-s',
                   help='Email of the sender',
-                  action='store_true', default='')
+                  action='store', default='')
 parser.add_option('--mailserver', '-i',
                   help='Mail server to use',
-                  action='store_true', default='')
+                  action='store', default='')
 parser.add_option('--apikeyfile', '-a',
                   help='File containing www.trafiklab.se API key.',
-                  action='store_true', default='SL_API_key')
+                  action='store', default='SL_API_key')
 (options, args) = parser.parse_args()
 debug = options.debug
 lines = options.lines
