@@ -97,7 +97,7 @@ parser.add_option('--recipients', '-r',
 parser.add_option('--sender', '-s',
                   help='Email of the sender',
                   action='store_true', default='')
-parser.add_option('--mailserver', '-h',
+parser.add_option('--mailserver', '-i',
                   help='Mail server to use',
                   action='store_true', default='')
 parser.add_option('--apikeyfile', '-a',
